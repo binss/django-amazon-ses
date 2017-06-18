@@ -7,6 +7,7 @@ from django.conf import settings
 from django.core.mail.backends.base import BaseEmailBackend
 from django.core.mail.message import sanitize_address
 from django.dispatch import Signal
+from django.conf import settings
 
 pre_send = Signal(providing_args=['message'])
 post_send = Signal(providing_args=['message', 'message_id'])
@@ -34,7 +35,15 @@ class EmailBackend(BaseEmailBackend):
                 'DJANGO_AMAZON_SES_REGION',
                 'us-east-1'
             )
-        self.conn = boto3.client('ses', region_name=region_name)
+
+        # http://boto3.readthedocs.io/en/latest/guide/configuration.html
+        self.conn = boto3.client(
+            'ses',
+            region_name=region_name,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+        )
+
 
     def send_messages(self, email_messages):
         """Sends one or more EmailMessage objects and returns the
